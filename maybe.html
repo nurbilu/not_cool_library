@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Books App</title>
+</head>
+
+<body>
+
+    <div id="display"></div>
+
+    <div id="bookInfo"></div>
+
+    <button id="firstButton">First Book</button>
+    <button id="prevButton">Previous Book</button>
+    <button id="nextButton">Next Book</button>
+    <button id="lastButton">Last Book</button>
+    <script>
+
+        let books = [];
+        let currentIndex = 0;
+
+        async function getBooks() {
+            let server = "http://localhost:3000/books"; // local
+            // let server = "https://jsonplaceholder.typicode.com/todos"; // remote
+            let res = await fetch(server).then(response => response.json());
+            books = res;
+            // displayBooks(currentIndex);
+        }
+
+        function displayBooks() {
+
+            let display = document.getElementById("display");
+            display.innerHTML = "";
+
+            if (books.length === 0) {
+                display.textContent = "No books to display";
+                return;
+            }
+
+            for (let i = 0; i < books.length; i++) {
+                let book = books[i];
+                if (typeof book === "object") {
+                    display.innerHTML += book.name + " by " + book.author + "<br>";
+                }
+            }
+
+            displayBookInfo(currentIndex);
+
+        }
+
+        function displayBookInfo(index) {
+
+            let bookInfoDiv = document.getElementById("bookInfo");
+
+            if (index < 0 || index >= books.length) {
+                bookInfoDiv.textContent = "Invalid book index";
+                return;
+            }
+
+            let book = books[index];
+
+            if (typeof book !== "object") {
+                bookInfoDiv.textContent = "Invalid book at index " + index;
+                return;
+            }
+
+            let name = book.name || "";
+            let author = book.author || "";
+
+            bookInfoDiv.innerHTML = "Name: " + name + "<br>" + "Author: " + author;
+
+            currentIndex = index;
+
+        }
+
+        function prevBook() {
+
+            if (books.length === 0) {
+                alert("No books to display");
+                return;
+            }
+
+            if (currentIndex > 0) {
+                currentIndex--;
+            } else {
+                alert("Already at first book");
+            }
+
+            displayBookInfo(currentIndex);
+
+        }
+
+        function nextBook() {
+
+            if (books.length === 0) {
+                alert("No books to display");
+                return;
+            }
+
+            if (currentIndex < books.length - 1) {
+                currentIndex++;
+            } else {
+                alert("Already at last book");
+            }
+
+            displayBookInfo(currentIndex);
+        }
+
+        function firstBook() {
+
+            if (books.length === 0) {
+                return;
+            }
+
+            currentIndex = 0;
+            displayBookInfo(currentIndex);
+
+        }
+
+        function lastBook() {
+
+            if (books.length === 0) {
+                return;
+            }
+
+            currentIndex = books.length - 1;
+            displayBookInfo(currentIndex);
+
+        }
+
+        // Add event listeners
+
+        document.getElementById("prevButton").addEventListener("click", prevBook);
+        document.getElementById("nextButton").addEventListener("click", nextBook);
+        document.getElementById("firstButton").addEventListener("click", firstBook);
+        document.getElementById("lastButton").addEventListener("click", lastBook);
+
+        // Fetch books and display
+        getBooks();
+
+    </script>
+
+</body>
+
+</html>
