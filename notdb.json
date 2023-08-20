@@ -1,31 +1,31 @@
 {
   "books": [
     {
-      "name": "The Great Gatsby",
+      "book": "The Great Gatsby",
       "author": "F. Scott Fitzgerald"
     },
     {
-      "name": "To Kill a Mockingbird",
+      "book": "To Kill a Mockingbird",
       "author": "Harper Lee"
     },
     {
-      "name": "1984",
+      "book": "1984",
       "author": "George Orwell"
     },
     {
-      "name": "Prejudice",
+      "book": "Prejudice",
       "author": "Jane Austen"
     },
     {
-      "name": "The Catcher in the Rye",
+      "book": "The Catcher in the Rye",
       "author": "J.D. Salinger"
     },
     {
-      "name": "Brave New World",
+      "book": "Brave New World",
       "author": "Aldous Huxley"
     },
     {
-      "name": "The Hobbit",
+      "book": "The Hobbit",
       "author": "J.R.R. Tolkien"
     }
   ]

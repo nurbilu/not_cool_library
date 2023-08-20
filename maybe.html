@@ -1,158 +1,118 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
+<html>
 <body>
-    <label for="book">Book Name:</label>
-    <input id="book" type="text">
-    <label for="author">Author:</label>
-    <input id="author" type="text">
-    <button onclick="first()">First</button>
-    <button onclick="next()">Next</button>
-    <button onclick="prev()">Prev</button>
-    <button onclick="last()">Last</button> |
-    <button onclick="addData()">Add</button>
-    <button onclick="delData()">Del</button>
-    <button onclick="updateData()">Update</button>
-    <div id="display"></div>
 
-    <script>
-        const MY_SERVER = "http://localhost:3000/books"
-        let books = [];
-        let index = 0;
+<input id="book">
+<input id="author">
 
-        async function updateData() {
-            try {
-                const updatedBook = {
-                    book: document.getElementById('book').value,
-                    author: document.getElementById('author').value
-                };
+<button onclick="first()">First</button>  
+<button onclick="prev()">Prev</button>
+<button onclick="next()">Next</button>
+<button onclick="last()">Last</button>
 
-                const response = await fetch(`${MY_SERVER}/${index}`, {
-                    method: 'PUT',
-                    body: JSON.stringify(updatedBook),
-                    headers: {
-                        'Content-type': 'application/json; charset=UTF-8',
-                    },
-                });
+<button onclick="add()">Add</button>
+<button onclick="remove()">Remove</button>
+<button onclick="update()">Update</button>
 
-                if (response.ok) {
-                    const json = await response.json();
-                    console.log(json);
-                } else {
-                    console.error('Update failed:', response.status);
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        }
+<div id="message"></div>
 
-        async function delData() {
-            try {
-                const response = await fetch(`${MY_SERVER}/${index}`, {
-                    method: 'DELETE',
-                });
+<script>
 
-                if (response.ok) {
-                    console.log('Deleted successfully');
-                    // Update the books array after deletion
-                    books.splice(index, 1);
-                    if (index >= books.length) {
-                        index = books.length - 1;
-                    }
-                    updDisplay();
-                } else {
-                    console.error('Deletion failed:', response.status);
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        }
+const API_URL = "http://localhost:3000/books";
+let books = [];
+let currentIndex = 0;
 
-        async function getData() {
-            try {
-                const response = await fetch(MY_SERVER);
-                if (response.ok) {
-                    books = await response.json();
-                    updDisplay();
-                } else {
-                    console.error('Failed to fetch data:', response.status);
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        }
+async function initialize() {
+  const response = await fetch(API_URL);
+  books = await response.json();
+  updateDisplay();  
+}
 
-        async function addData() {
-            try {
-                const newBook = {
-                    book: document.getElementById('book').value,
-                    author: document.getElementById('author').value
-                };
+async function add() {
+  const book = getBookFromInput();
+  
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    body: JSON.stringify(book)
+  });
+  
+  const newBook = await response.json();
+  books.push(newBook);
+  
+  updateDisplay();
+}
 
-                const response = await fetch(MY_SERVER, {
-                    method: 'POST',
-                    body: JSON.stringify(newBook),
-                    headers: {
-                        'Content-type': 'application/json; charset=UTF-8',
-                    },
-                });
+async function remove() {
+  await fetch(`${API_URL}/${currentIndex}`, {
+    method: 'DELETE'
+  });
+  
+  books.splice(currentIndex, 1);
+  updateDisplay();
+} 
 
-                if (response.ok) {
-                    const json = await response.json();
-                    console.log(json);
-                    books.push(newBook); // Add the new book to the array
-                    index = books.length - 1; // Set index to the newly added book
-                    updDisplay();
-                } else {
-                    console.error('Addition failed:', response.status);
-                }
-            } catch (err) {
-                console.error(err);
-            }
-        }
+async function update() {
+  const updatedBook = getBookFromInput();
+  
+  const response = await fetch(`${API_URL}/${currentIndex}`, {
+    method: 'PUT',
+    body: JSON.stringify(updatedBook)
+  });
 
-        function updDisplay() {
-            const display = document.getElementById('display');
-            const bookInput = document.getElementById('book');
-            const authorInput = document.getElementById('author');
+  const updatedData = await response.json();
+  books[currentIndex] = updatedData;
 
-            if (bookInput && authorInput) {
-                bookInput.value = books[index]?.book || '';
-                authorInput.value = books[index]?.author || '';
-            }
+  updateDisplay();
+}
 
-            display.innerHTML = `${index + 1} from ${books.length}`;
-        }
+function getBookFromInput() {
+  const book = document.getElementById("book").value;
+  const author = document.getElementById("author").value;
+  return { book, author }; 
+}
 
-        function first() {
-            index = 0;
-            updDisplay();
-        }
+function updateDisplay() {
+  const message = document.getElementById("message");
+  const bookInput = document.getElementById("book");
+  const authorInput = document.getElementById("author");
 
-        function next() {
-            if (index < books.length - 1) {
-                index++;
-            }
-            updDisplay();
-        }
+  if (books[currentIndex]) {
+    bookInput.value = books[currentIndex].book;
+    authorInput.value = books[currentIndex].author;
+  }
 
-        function prev() {
-            if (index > 0) {
-                index--;
-            }
-            updDisplay();
-        }
+  message.innerText = `${currentIndex + 1} of ${books.length}`; 
+}
 
-        function last() {
-            index = books.length - 1;
-            updDisplay();
-        }
+function first() {
+  currentIndex = 0;
+  updateDisplay();
+}
 
-        getData();
-    </script>
+function prev() {
+  currentIndex--;
+  if (currentIndex < 0) {
+    currentIndex = books.length - 1; 
+  }
+  updateDisplay();
+}
+
+function next() {
+  currentIndex++;
+  if (currentIndex >= books.length) {
+    currentIndex = 0;
+  }
+  updateDisplay();
+}
+
+function last() {
+  currentIndex = books.length - 1;
+  updateDisplay();
+}
+
+initialize();
+
+</script>
+
 </body>
 </html>

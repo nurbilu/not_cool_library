@@ -18,42 +18,51 @@
     <button onclick="delData()">del</button>
     <button onclick="updateData()">UPD</button>
     <div id="display"></div>
-    
-    <script>
-        const MY_SERVER = "http://localhost:3000/books"
-        let books = [];
-        let index = 0;
-        function updateData() {
-            try {
-                fetch(`${MY_SERVER}/${index}`, {
-                    //...
-                })
-                    .then(response => response.json())
-                    .then(json => {
-                        console.log(json)
-                    })
-                    .catch(err => {
-                        console.log(err);
-                    });
-            } catch (err) {
-                console.log(err);
-            }
-        }
-        function next() {
-            if (index >= 0 && index < books.length - 1) {
-                index++;
-            }
-            updDisplay();
-        }
-        async function delData() {
-            fetch(`${MY_SERVER}/${index}`, { method: 'DELETE' });
-            // updDisplay();
-        }
 
-        async function getData() {
-            books = await fetch(MY_SERVER).then((response) => response.json())
-            updDisplay();
-        }
+    <script>
+            const MY_SERVER = "http://localhost:3000/books"
+            let books = [];
+            let index = 0;
+        
+            function updDisplay() {
+                if (book) {
+                    book.value = books[index]?.book
+                }
+
+                if (author) {
+                    author.value = books[index]?.author
+                }
+
+                display.innerHTML = `${index + 1} from ${books.length}`
+            }
+
+            function updateData() {
+                try {
+                    fetch(`${MY_SERVER}/${index}`, {
+                        //...
+                    })
+                        .then(response => response.json())
+                        .then(json => {
+                            console.log(json)
+                        })
+                        .catch(err => {
+                            console.log(err);
+                        });
+                } catch (err) {
+                    console.log(err);
+                } localStorage.setItem('books', JSON.stringify(books));
+            }
+
+            async function delData() {
+                fetch(`${MY_SERVER}/${index}`, { method: 'DELETE' });
+                updDisplay();
+            }
+
+            async function getData() {
+                books = await fetch(MY_SERVER).then((response) => response.json())
+                updDisplay();
+
+            }
         async function addData() {
             fetch(MY_SERVER, {
                 method: 'POST',
@@ -68,18 +77,6 @@
                 .then((response) => response.json())
                 .then((json) => console.log(json));
         }
-        function updDisplay() {
-            if (book) {
-                book.value = books[index]?.book
-            }
-
-            if (author) {
-                author.value = books[index]?.author
-            }
-
-            display.innerHTML = `${index + 1} from ${books.length}`
-        }
-
         function first() {
             index = 0
             updDisplay()
@@ -97,7 +94,6 @@
             updDisplay()
         }
         getData()
-        localStorage.setItem('books', JSON.stringify(books));
     </script>
 </body>
 

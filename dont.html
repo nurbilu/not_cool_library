@@ -2,28 +2,154 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
 </head>
 
 <body>
-    <button onclick="getBooks()">book list</button>
-    <div id="display"></div>
-    <script>
+  Book Name:<input id="book">
+  Author:<input id="author">
+  <button onclick="first()">First</button>
+  <button onclick="next()">next</button>
+  <button onclick="prev()">prev</button>
+  <button onclick="last()">Last</button> |
+  <button onclick="addData()">Add</button>
+  <button onclick="delData()">del</button>
+  <button onclick="updateData()">UPD</button>
+  <div id="display"></div>
 
-        async function getBooks() {
+  <script>
+    const MY_SERVER = "http://localhost:3000/books";
+    let books = [];
+    let index = 0;
+    
+    // Get data from localStorage on load
+    const storedBooks = JSON.parse(localStorage.getItem('books'));
+    if(storedBooks) {
+      books = storedBooks;
+    }
 
-            let server = "http://localhost:3000/books" //local
-            // let server = "https://jsonplaceholder.typicode.com/todos" //remote
-            let res = await fetch(server).then(response => response.json())
-            console.log(res);
-            for (let index = 0; index < res.length; index++) {
-                display.innerHTML += res[index].name + "</br>";
-            }
-            // display.innerHTML = res
+    function updateDisplay() {
+      if (book) {
+        book.value = books[index]?.book;
+      }
+      if (author) {
+        author.value = books[index]?.author;
+      }
+
+      display.innerHTML = `${index + 1} from ${books.length}`;
+    }
+
+    async function updateData() {
+      const updatedBook = {
+        book: book.value,
+        author: author.value  
+      };
+
+      try {
+        await fetch(`${MY_SERVER}/${index}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(updatedBook)
+        });
+        
+        // Update local array
+        books[index] = updatedBook;
+        
+        // Save to localStorage
+        localStorage.setItem('books', JSON.stringify(books));
+        
+      } catch (err) {
+        console.log(err);
+      }
+
+      updateDisplay();
+    }
+
+    async function deleteData() {
+    
+      try {
+        await fetch(`${MY_SERVER}/${index}`, {
+          method: 'DELETE'
+        });
+        
+        // Remove from local array
+        books.splice(index, 1);
+        
+        // Save to localStorage
+        localStorage.setItem('books', JSON.stringify(books));
+        
+      } catch (err) {
+        console.log(err);
+      }
+
+      updateDisplay();
+    }
+
+    async function getData() {
+    
+      try {
+        const data = await fetch(MY_SERVER);
+        books = await data.json();
+        
+      } catch (err) {
+        console.log(err);
+      }
+
+      updateDisplay();
+    }
+
+    async function addData() {
+    
+      const newBook = {
+        book: book.value, 
+        author: author.value
+      };
+      
+      try {
+        await fetch(MY_SERVER, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(newBook)  
+        });
+        
+        // Add to local array
+        books.push(newBook);
+        
+        // Save to localStorage
+        localStorage.setItem('books', JSON.stringify(books));
+        
+      } catch (err) {
+        console.log(err);
+      }
+
+      updateDisplay();
+    }
+
+    function first() {
+            index = 0
+            updDisplay()
         }
-    </script>
+        function next() {
+            index = (index + 1) % books.length
+            updDisplay()
+        }
+        function prev() {
+            index = index > 0 ? index - 1 : 0
+            updDisplay()
+        }
+        function last() {
+            index = books.length - 1
+            updDisplay()
+        }
+        getData()
+
+  </script>
 </body>
 
 </html>
